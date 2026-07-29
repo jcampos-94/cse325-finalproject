@@ -1,6 +1,14 @@
 using cse325_finalproject.Components;
+using cse325_finalproject.Data;
+using cse325_finalproject.Services;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlite(
+        builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<CategoryService>();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()

@@ -1,0 +1,278 @@
+@page "/categories"
+@rendermode InteractiveServer
+@using cse325_finalproject.Models
+@using cse325_finalproject.Services
+
+@inject CategoryService CategoryService
+
+
+<h1>Categories</h1>
+
+<div class="mb-3">
+
+    <input class="form-control"
+    placeholder="Category name"
+    @bind="newCategoryName" />
+    @if (!string.IsNullOrEmpty(validationMessage))
+    {
+        <p class="text-danger">
+            @validationMessage
+        </p>
+    }
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <p class="text-danger">
+            @errorMessage
+        </p>
+    }
+    <button class="btn btn-primary mt-2"
+    @onclick="AddCategory">
+    Add Category
+</button>
+
+</div>
+
+@if (isEditing)
+{
+    <div class="mb-3">
+
+        <input class="form-control"
+        @bind="editingCategoryName" />
+
+        <button class="btn btn-success mt-2"
+        @onclick="SaveEdit">
+        Save Changes
+    </button>
+
+</div>
+}
+<h3>Existing Categories</h3>
+
+
+@if (categories == null)
+{
+    <p>Loading categories...</p>
+}
+else if (categories.Count == 0)
+{
+    <p>No categories available.</p>
+}
+else
+{
+    <div class="table-responsive">
+
+        <table class="table table-striped table-hover">
+
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                @foreach (var category in categories)
+                {
+                    <tr>
+
+                        <td>
+                            @category.Name
+                        </td>
+
+                        <td>
+
+                            <button class="btn btn-warning btn-sm me-2"
+                            @onclick="() => StartEdit(category)">
+                            Edit
+                        </button>
+
+                        <button class="btn btn-danger btn-sm"
+                        @onclick="() => ConfirmDelete(category)">
+                        Delete
+                    </button>
+
+                </td>
+
+            </tr>
+        }
+
+    </tbody>
+
+</table>
+
+</div>
+
+}
+@if (showDeleteConfirmation)
+{
+    <div class="alert alert-warning">
+
+        <p>
+            Are you sure you want to delete
+            <strong>@categoryToDeleteName</strong>?
+        </p>
+
+
+        <button class="btn btn-danger me-2"
+        @onclick="DeleteCategory">
+        Delete
+    </button>
+
+
+    <button class="btn btn-secondary"
+    @onclick="() => showDeleteConfirmation = false">
+    Cancel
+</button>
+
+</div>
+}
+@code
+{
+    private List<Category>? categories;
+
+    private string newCategoryName = "";
+
+    private string validationMessage = "";
+
+    private string errorMessage = "";
+
+    private bool showDeleteConfirmation = false;
+
+    private int categoryToDeleteId;
+
+    private string categoryToDeleteName = "";
+
+    private bool isEditing = false;
+
+    private int editingCategoryId;
+
+    private string editingCategoryName = "";
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCategories();
+    }
+
+    private async Task LoadCategories()
+    {
+        categories = await CategoryService.GetCategoriesAsync();
+    }
+    private async Task AddCategory()
+    {
+        validationMessage = "";
+
+        errorMessage = "";
+
+
+        try
+        {
+            if (string.IsNullOrWhiteSpace(newCategoryName))
+            {
+                validationMessage = "Category name is required.";
+
+                return;
+            }
+
+
+            var category = new Category
+            {
+                Name = newCategoryName.Trim()
+                };
+
+
+                await CategoryService.AddCategoryAsync(category);
+
+
+                newCategoryName = "";
+
+
+                await LoadCategories();
+            }
+            catch (Exception)
+            {
+                errorMessage = "Unable to save category. Please try again.";
+            }
+        }
+
+
+        private void StartEdit(Category category)
+        {
+            isEditing = true;
+
+            editingCategoryId = category.Id;
+
+            editingCategoryName = category.Name;
+        }
+
+
+        private async Task SaveEdit()
+        {
+            validationMessage = "";
+
+            errorMessage = "";
+
+
+            try
+            {
+                if (string.IsNullOrWhiteSpace(editingCategoryName))
+                {
+                    validationMessage = "Category name is required.";
+
+                    return;
+                }
+
+
+                var category = new Category
+                {
+                    Id = editingCategoryId,
+
+                    Name = editingCategoryName.Trim()
+                    };
+
+
+                    await CategoryService.UpdateCategoryAsync(category);
+
+
+                    isEditing = false;
+
+                    editingCategoryName = "";
+
+
+                    await LoadCategories();
+                }
+                catch (Exception)
+                {
+                    errorMessage = "Unable to update category. Please try again.";
+                }
+            }
+
+
+            private void ConfirmDelete(Category category)
+            {
+                categoryToDeleteId = category.Id;
+
+                categoryToDeleteName = category.Name;
+
+                showDeleteConfirmation = true;
+            }
+
+
+            private async Task DeleteCategory()
+            {
+                try
+                {
+                    await CategoryService.DeleteCategoryAsync(categoryToDeleteId);
+
+                    showDeleteConfirmation = false;
+
+                    await LoadCategories();
+                }
+                catch (Exception)
+                {
+                    errorMessage = "Unable to delete category. Please try again.";
+                }
+                }   
+}    
