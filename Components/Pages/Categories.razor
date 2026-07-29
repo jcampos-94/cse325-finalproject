@@ -1,0 +1,116 @@
+@page "/categories"
+@rendermode InteractiveServer
+@using cse325_finalproject.Models
+@using cse325_finalproject.Services
+
+@inject CategoryService CategoryService
+
+
+<h1>Categories</h1>
+
+<div class="mb-3">
+
+    <input class="form-control"
+    placeholder="Category name"
+    @bind="newCategoryName" />
+
+    <button class="btn btn-primary mt-2"
+    @onclick="AddCategory">
+    Add Category
+</button>
+
+</div>
+
+
+<h3>Existing Categories</h3>
+
+
+@if (categories == null)
+{
+    <p>Loading categories...</p>
+}
+else if (categories.Count == 0)
+{
+    <p>No categories available.</p>
+}
+else
+{
+    <table class="table">
+
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            @foreach (var category in categories)
+            {
+                <tr>
+
+                    <td>
+                        @category.Name
+                    </td>
+
+                    <td>
+
+                        <button class="btn btn-danger btn-sm"
+                        @onclick="() => DeleteCategory(category.Id)">
+                        Delete
+                    </button>
+
+                </td>
+
+            </tr>
+        }
+
+    </tbody>
+
+</table>
+}
+
+@code {
+
+    private List<Category>? categories;
+
+    private string newCategoryName = "";
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCategories();
+    }
+
+
+    private async Task LoadCategories()
+    {
+        categories = await CategoryService.GetCategoriesAsync();
+    }
+
+
+    private async Task AddCategory()
+{
+    if (!string.IsNullOrWhiteSpace(newCategoryName))
+    {
+        var category = new Category
+        {
+            Name = newCategoryName
+        };
+
+        await CategoryService.AddCategoryAsync(category);
+
+        newCategoryName = "";
+
+        await LoadCategories();
+    }
+}
+
+    private async Task DeleteCategory(int id)
+    {
+        await CategoryService.DeleteCategoryAsync(id);
+
+        await LoadCategories();
+    }
+}
