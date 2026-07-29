@@ -60,45 +60,50 @@ else if (categories.Count == 0)
 }
 else
 {
-    <table class="table">
+    <div class="table-responsive">
 
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Action</th>
-            </tr>
-        </thead>
+        <table class="table table-striped table-hover">
 
-        <tbody>
-
-            @foreach (var category in categories)
-            {
+            <thead>
                 <tr>
+                    <th>Name</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
 
-                    <td>
-                        @category.Name
-                    </td>
+            <tbody>
 
-                    <td>
+                @foreach (var category in categories)
+                {
+                    <tr>
 
-                        <button class="btn btn-warning btn-sm me-2"
-                        @onclick="() => StartEdit(category)">
-                        Edit
+                        <td>
+                            @category.Name
+                        </td>
+
+                        <td>
+
+                            <button class="btn btn-warning btn-sm me-2"
+                            @onclick="() => StartEdit(category)">
+                            Edit
+                        </button>
+
+                        <button class="btn btn-danger btn-sm"
+                        @onclick="() => ConfirmDelete(category)">
+                        Delete
                     </button>
 
-                    <button class="btn btn-danger btn-sm"
-                    @onclick="() => ConfirmDelete(category)">
-                    Delete
-                </button>
+                </td>
 
-            </td>
+            </tr>
+        }
 
-        </tr>
-    }
-
-</tbody>
+    </tbody>
 
 </table>
+
+</div>
+
 }
 @if (showDeleteConfirmation)
 {
@@ -111,17 +116,17 @@ else
 
 
         <button class="btn btn-danger me-2"
-                @onclick="DeleteCategory">
-            Delete
-        </button>
+        @onclick="DeleteCategory">
+        Delete
+    </button>
 
 
-        <button class="btn btn-secondary"
-                @onclick="() => showDeleteConfirmation = false">
-            Cancel
-        </button>
+    <button class="btn btn-secondary"
+    @onclick="() => showDeleteConfirmation = false">
+    Cancel
+</button>
 
-    </div>
+</div>
 }
 @code
 {
@@ -269,5 +274,5 @@ else
                 {
                     errorMessage = "Unable to delete category. Please try again.";
                 }
-                }   }
-            
+                }   
+}    
