@@ -21,7 +21,20 @@
 
 </div>
 
+@if (isEditing)
+{
+    <div class="mb-3">
 
+        <input class="form-control"
+               @bind="editingCategoryName" />
+
+        <button class="btn btn-success mt-2"
+                @onclick="SaveEdit">
+            Save Changes
+        </button>
+
+    </div>
+}
 <h3>Existing Categories</h3>
 
 
@@ -56,26 +69,37 @@ else
 
                     <td>
 
-                        <button class="btn btn-danger btn-sm"
-                        @onclick="() => DeleteCategory(category.Id)">
-                        Delete
+                        <button class="btn btn-warning btn-sm me-2"
+                        @onclick="() => StartEdit(category)">
+                        Edit
                     </button>
 
-                </td>
+                    <button class="btn btn-danger btn-sm"
+                    @onclick="() => DeleteCategory(category.Id)">
+                    Delete
+                </button>
 
-            </tr>
-        }
+            </td>
 
-    </tbody>
+        </tr>
+    }
+
+</tbody>
 
 </table>
 }
 
-@code {
-
+@code
+{
     private List<Category>? categories;
 
     private string newCategoryName = "";
+
+    private bool isEditing = false;
+
+    private int editingCategoryId;
+
+    private string editingCategoryName = "";
 
 
     protected override async Task OnInitializedAsync()
@@ -91,21 +115,60 @@ else
 
 
     private async Task AddCategory()
-{
-    if (!string.IsNullOrWhiteSpace(newCategoryName))
     {
-        var category = new Category
+        if (!string.IsNullOrWhiteSpace(newCategoryName))
         {
-            Name = newCategoryName
-        };
+            var category = new Category
+            {
+                Name = newCategoryName
+            };
 
-        await CategoryService.AddCategoryAsync(category);
 
-        newCategoryName = "";
+            await CategoryService.AddCategoryAsync(category);
 
-        await LoadCategories();
+
+            newCategoryName = "";
+
+
+            await LoadCategories();
+        }
     }
-}
+
+
+    private void StartEdit(Category category)
+    {
+        isEditing = true;
+
+        editingCategoryId = category.Id;
+
+        editingCategoryName = category.Name;
+    }
+
+
+    private async Task SaveEdit()
+    {
+        if (!string.IsNullOrWhiteSpace(editingCategoryName))
+        {
+            var category = new Category
+            {
+                Id = editingCategoryId,
+
+                Name = editingCategoryName
+            };
+
+
+            await CategoryService.UpdateCategoryAsync(category);
+
+
+            isEditing = false;
+
+            editingCategoryName = "";
+
+
+            await LoadCategories();
+        }
+    }
+
 
     private async Task DeleteCategory(int id)
     {
