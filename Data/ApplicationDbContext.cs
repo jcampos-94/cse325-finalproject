@@ -1,5 +1,5 @@
-using Microsoft.EntityFrameworkCore;
 using cse325_finalproject.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace cse325_finalproject.Data;
 
@@ -11,7 +11,7 @@ public class ApplicationDbContext : DbContext
     }
 
 
-    public DbSet<Product> Products { get; set; }
-
     public DbSet<Category> Categories { get; set; }
+
+    public DbSet<Product> Products { get; set; }
 }
