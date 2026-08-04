@@ -1,0 +1,361 @@
+@page "/products"
+@rendermode InteractiveServer
+@using cse325_finalproject.Models
+@inject cse325_finalproject.Services.ProductService ProductService
+@inject cse325_finalproject.Services.CategoryService CategoryService
+
+<h3>Products</h3>
+@if (showDeleteConfirmation)
+{
+    <div class="alert alert-warning">
+
+        <p>
+            Are you sure you want to delete
+            <strong>@productToDeleteName</strong>?
+        </p>
+
+
+        <button class="btn btn-danger me-2"
+                @onclick="DeleteProduct">
+
+            Delete
+
+        </button>
+
+
+        <button class="btn btn-secondary"
+                @onclick="CancelDelete">
+
+            Cancel
+
+        </button>
+
+    </div>
+}
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">
+        @errorMessage
+    </div>
+}
+
+<h4>
+    @(isEditing ? "Edit Product" : "Add Product")
+</h4>
+
+
+<div class="mb-3">
+
+    <label class="form-label">
+        Product Name
+    </label>
+
+    <input class="form-control"
+    @bind="newProduct.Name" />
+
+</div>
+
+
+<div class="mb-3">
+
+    <label class="form-label">
+        Description
+    </label>
+
+    <input class="form-control"
+    @bind="newProduct.Description" />
+
+</div>
+
+
+<div class="mb-3">
+
+    <label class="form-label">
+        Price
+    </label>
+
+    <input type="number"
+    class="form-control"
+    @bind="newProduct.Price" />
+
+</div>
+
+
+<div class="mb-3">
+
+    <label class="form-label">
+        Quantity
+    </label>
+
+    <input type="number"
+    class="form-control"
+    @bind="newProduct.Quantity" />
+
+</div>
+
+
+<div class="mb-3">
+
+    <label class="form-label">
+        Category
+    </label>
+
+
+    <select class="form-select"
+    @bind="newProduct.CategoryId">
+
+    <option value="0">
+        Select Category
+    </option>
+
+
+    @foreach (var category in categories)
+    {
+        <option value="@category.Id">
+            @category.Name
+        </option>
+    }
+
+</select>
+
+</div>
+
+
+@if (isEditing)
+{
+    <button class="btn btn-success"
+            @onclick="UpdateProduct">
+
+        Update Product
+
+    </button>
+
+
+    <button class="btn btn-secondary ms-2"
+            @onclick="CancelEdit">
+
+        Cancel
+
+    </button>
+}
+else
+{
+    <button class="btn btn-primary"
+            @onclick="AddProduct">
+
+        Add Product
+
+    </button>
+}
+
+@if (products == null)
+{
+    <p>Loading products...</p>
+}
+else if (products.Count == 0)
+{
+    <p>No products available.</p>
+}
+else
+{
+    <div class="table-responsive">
+
+        <table class="table table-striped table-hover">
+
+            <thead>
+                <tr>
+                    <th>
+                        Name
+                    </th>
+
+                    <th>
+                        Price
+                    </th>
+
+                    <th>
+                        Quantity
+                    </th>
+
+                    <th>
+                        Category
+                    </th>
+                    <th>
+                        Actions
+                    </th>
+                </tr>
+            </thead>
+
+
+            <tbody>
+
+                @foreach (var product in products)
+                {
+                    <tr>
+
+                        <td>
+                            @product.Name
+                        </td>
+
+                        <td>
+                            @product.Price
+                        </td>
+
+                        <td>
+                            @product.Quantity
+                        </td>
+
+                        <td>
+                            @product.Category?.Name
+                        </td>
+
+                        <td>
+
+                            <button class="btn btn-warning btn-sm me-2"
+                            @onclick="() => StartEdit(product)">
+                            Edit
+                        </button>
+
+
+                        <button class="btn btn-danger btn-sm"
+                        @onclick="() => ConfirmDelete(product)">
+                        Delete
+                    </button>
+
+                </td>
+            </tr>
+        }
+
+    </tbody>
+
+</table>
+
+</div>
+}
+
+@code
+{
+    private List<Product>? products;
+
+    private Product newProduct = new();
+
+    private List<Category> categories = new();
+
+    private string errorMessage = "";
+
+    private bool isEditing = false;
+
+    private int editingProductId;
+
+    private bool showDeleteConfirmation = false;
+
+    private int productToDeleteId;
+
+    private string productToDeleteName = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        products = await ProductService.GetProductsAsync();
+
+        categories = await CategoryService.GetCategoriesAsync();
+    }
+    private void StartEdit(Product product)
+    {
+        isEditing = true;
+
+        editingProductId = product.Id;
+
+        newProduct = new Product
+        {
+            Id = product.Id,
+            Name = product.Name,
+            Description = product.Description,
+            Price = product.Price,
+            Quantity = product.Quantity,
+            CategoryId = product.CategoryId
+            };
+        }
+    private async Task UpdateProduct()
+   {
+    await ProductService.UpdateProductAsync(newProduct);
+
+    isEditing = false;
+
+    newProduct = new Product();
+
+    products = await ProductService.GetProductsAsync();
+   }
+
+
+   private void CancelEdit()
+   {
+    isEditing = false;
+
+    newProduct = new Product();
+    }
+    private async Task DeleteProduct()
+{
+    await ProductService.DeleteProductAsync(productToDeleteId);
+
+
+    showDeleteConfirmation = false;
+
+
+    products = await ProductService.GetProductsAsync();
+}
+
+
+private void CancelDelete()
+{
+    showDeleteConfirmation = false;
+}
+    private void ConfirmDelete(Product product)
+    {
+    productToDeleteId = product.Id;
+
+    productToDeleteName = product.Name;
+
+     showDeleteConfirmation = true;
+    }
+
+    private async Task AddProduct()
+    {
+            errorMessage = "";
+
+
+            if (string.IsNullOrWhiteSpace(newProduct.Name))
+            {
+                errorMessage = "Product name is required.";
+                return;
+            }
+
+
+            if (newProduct.CategoryId == 0)
+            {
+                errorMessage = "Please select a category.";
+                return;
+            }
+
+
+            if (newProduct.Price <= 0)
+            {
+                errorMessage = "Price must be greater than zero.";
+                return;
+            }
+
+
+            if (newProduct.Quantity < 0)
+            {
+                errorMessage = "Quantity cannot be negative.";
+                return;
+            }
+
+
+            await ProductService.AddProductAsync(newProduct);
+
+
+            newProduct = new Product();
+
+
+            products = await ProductService.GetProductsAsync();
+        }
+    }
