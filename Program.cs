@@ -57,18 +57,34 @@ app.MapPost("/account/login", async (
     var email = form["Email"].ToString();
     var password = form["Password"].ToString();
 
-    var result = await signInManager.PasswordSignInAsync(
-        email,
-        password,
-        false,
-        false);
+    var user = await signInManager.UserManager.FindByEmailAsync(email);
 
-    if (result.Succeeded)
+    if (user == null)
     {
-        return Results.Redirect("/");
+        return Results.Redirect("/login?error=true");
     }
 
-    return Results.Redirect("/login?error=true");
+    var result = await signInManager.CheckPasswordSignInAsync(
+        user,
+        password,
+        false);
+
+    if (!result.Succeeded)
+    {
+        return Results.Redirect("/login?error=true");
+    }
+
+    await signInManager.SignInWithClaimsAsync(
+        user,
+        isPersistent: false,
+        new[]
+        {
+        new System.Security.Claims.Claim(
+            "DisplayName",
+            user.DisplayName)
+        });
+
+    return Results.Redirect("/");
 });
 
 
