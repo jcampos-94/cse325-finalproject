@@ -1,7 +1,61 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
 
-<h1>Hello, world!</h1>
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
-Welcome to your new app.
+@if (isAuthenticated)
+{
+  <h1>Hello, @displayName!</h1>
+
+  <p>
+    Welcome back to the Inventory Manager.
+  </p>
+}
+else
+{
+  <h1>Inventory Manager</h1>
+
+  <p>
+    Welcome to the Inventory Manager application.
+  </p>
+
+  <p>
+    Sign in or create an account to start managing your inventory.
+  </p>
+}
+
+<hr />
+
+<h3>What you can do</h3>
+
+<ul>
+  <li>Create and manage product categories.</li>
+  <li>Add, edit, and remove products.</li>
+  <li>Keep your inventory separate from other users.</li>
+  <li>Manage your account securely.</li>
+</ul>
+
+@code
+{
+  private bool isAuthenticated;
+  private string displayName = "";
+
+  protected override async Task OnInitializedAsync()
+  {
+    var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+    var user = authState.User;
+
+    isAuthenticated = user.Identity?.IsAuthenticated == true;
+
+    if (isAuthenticated)
+    {
+      displayName =
+          user.FindFirst("DisplayName")?.Value
+          ?? user.Identity?.Name
+          ?? "User";
+    }
+  }
+}

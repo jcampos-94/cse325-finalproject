@@ -1,0 +1,66 @@
+@page "/delete-account"
+@rendermode InteractiveServer
+@attribute [Authorize]
+
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Components.Authorization
+@using cse325_finalproject.Models
+
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+
+<h3>Delete Account</h3>
+
+<div class="alert alert-danger">
+
+  <strong>Warning!</strong>
+
+  <p>
+    This action cannot be undone.
+  </p>
+
+  <p>
+    Your account and all of your products will be permanently deleted.
+  </p>
+
+  <p>
+    Categories will remain available for all users.
+  </p>
+
+</div>
+
+<button class="btn btn-danger" @onclick="DeleteCurrentAccount">
+  Delete Account
+</button>
+
+@code {
+  private async Task DeleteCurrentAccount()
+  {
+    var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+    var principal = authState.User;
+
+    if (principal.Identity?.IsAuthenticated != true)
+    {
+      NavigationManager.NavigateTo("/login");
+      return;
+    }
+
+    var user = await UserManager.GetUserAsync(principal);
+
+    if (user == null)
+    {
+      NavigationManager.NavigateTo("/login");
+      return;
+    }
+
+    var result = await UserManager.DeleteAsync(user);
+
+    if (result.Succeeded)
+    {
+      NavigationManager.NavigateTo("/account/logout", true);
+    }
+  }
+}
