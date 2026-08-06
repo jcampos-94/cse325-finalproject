@@ -481,3 +481,5 @@ $RECYCLE.BIN/
 # Vim temporary swap files
 *.swp
 inventory.db
+inventory.db-shm
+inventory.db-wal

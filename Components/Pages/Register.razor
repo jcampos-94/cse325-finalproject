@@ -1,0 +1,142 @@
+@page "/register"
+@rendermode InteractiveServer
+
+@using System.ComponentModel.DataAnnotations
+@using cse325_finalproject.Models
+@using Microsoft.AspNetCore.Identity
+
+@inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager NavigationManager
+
+
+<h1>Create Account</h1>
+
+<div class="row">
+  <div class="col-md-6">
+
+    <EditForm Model="registerModel" OnValidSubmit="RegisterUser" FormName="register">
+
+      <DataAnnotationsValidator />
+
+      <ValidationSummary />
+
+      <div class="mb-3">
+        <label class="form-label">
+          Display Name
+        </label>
+
+        <InputText class="form-control" @bind-Value="registerModel.DisplayName" />
+      </div>
+
+
+      <div class="mb-3">
+        <label class="form-label">
+          Email
+        </label>
+
+        <InputText class="form-control" @bind-Value="registerModel.Email" />
+      </div>
+
+
+      <div class="mb-3">
+        <label class="form-label">
+          Password
+        </label>
+
+        <InputText type="password" class="form-control" @bind-Value="registerModel.Password" />
+      </div>
+
+
+      <div class="mb-3">
+        <label class="form-label">
+          Confirm Password
+        </label>
+
+        <InputText type="password" class="form-control" @bind-Value="registerModel.ConfirmPassword" />
+      </div>
+
+
+      <button class="btn btn-primary">
+        Register
+      </button>
+
+
+    </EditForm>
+
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+      <div class="alert alert-danger mt-3">
+        @errorMessage
+      </div>
+    }
+
+  </div>
+</div>
+
+
+@code {
+
+  private RegisterModel registerModel = new();
+
+  private string errorMessage = "";
+
+
+  private async Task RegisterUser()
+  {
+    errorMessage = "";
+
+
+    var user = new ApplicationUser
+    {
+      UserName = registerModel.Email,
+      Email = registerModel.Email,
+      DisplayName = registerModel.DisplayName
+    };
+
+
+    var result = await UserManager.CreateAsync(
+        user,
+        registerModel.Password
+    );
+
+
+    if (result.Succeeded)
+    {
+      NavigationManager.NavigateTo("/login");
+    }
+    else
+    {
+      errorMessage = string.Join(
+          ", ",
+          result.Errors.Select(e => e.Description)
+      );
+    }
+  }
+
+
+
+  public class RegisterModel
+  {
+
+    [Required]
+    public string DisplayName { get; set; } = string.Empty;
+
+
+    [Required]
+    [EmailAddress]
+    public string Email { get; set; } = string.Empty;
+
+
+    [Required]
+    [MinLength(6)]
+    public string Password { get; set; } = string.Empty;
+
+
+    [Required]
+    [Compare(nameof(Password))]
+    public string ConfirmPassword { get; set; } = string.Empty;
+
+  }
+
+}

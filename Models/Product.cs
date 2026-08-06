@@ -21,6 +21,11 @@ public class Product
     [Required]
     public int Quantity { get; set; }
 
+    // Foreign key to the logged-in user
+    public string UserId { get; set; } = string.Empty;
+
+    // Navigation property
+    public ApplicationUser? User { get; set; }
 
     public int CategoryId { get; set; }
 
