@@ -20,6 +20,7 @@ public class ProductService
         _authenticationStateProvider = authenticationStateProvider;
     }
 
+
     private async Task<string?> GetCurrentUserIdAsync()
     {
         var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
@@ -33,6 +34,7 @@ public class ProductService
 
         return null;
     }
+
 
     public async Task<List<Product>> GetProductsAsync()
     {
@@ -63,6 +65,34 @@ public class ProductService
             .Where(p => p.UserId == userId)
             .Include(p => p.Category)
             .FirstOrDefaultAsync(p => p.Id == id);
+    }
+
+
+    public async Task<List<Product>> SearchProductsAsync(string searchTerm)
+    {
+        var userId = await GetCurrentUserIdAsync();
+
+        if (userId == null)
+        {
+            return new List<Product>();
+        }
+
+        var query = _context.Products
+            .Where(p => p.UserId == userId)
+            .Include(p => p.Category)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var term = searchTerm.Trim().ToLower();
+
+            query = query.Where(p =>
+                p.Name.ToLower().Contains(term) ||
+                (p.Description != null && p.Description.ToLower().Contains(term)) ||
+                (p.Category != null && p.Category.Name.ToLower().Contains(term)));
+        }
+
+        return await query.ToListAsync();
     }
 
 

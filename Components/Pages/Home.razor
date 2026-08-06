@@ -1,4 +1,5 @@
 ﻿@page "/"
+@rendermode InteractiveServer
 
 @using Microsoft.AspNetCore.Components.Authorization
 @using System.Security.Claims
@@ -7,55 +8,118 @@
 
 @if (isAuthenticated)
 {
-  <h1>Hello, @displayName!</h1>
+    <div class="text-center mb-4">
+        <h1>Hello, @displayName!</h1>
 
-  <p>
-    Welcome back to the Inventory Manager.
-  </p>
+        <p class="lead">
+            Welcome back to the Inventory Manager.
+        </p>
+    </div>
 }
 else
 {
-  <h1>Inventory Manager</h1>
+    <div class="text-center mb-4">
+        <h1>Inventory Manager</h1>
 
-  <p>
-    Welcome to the Inventory Manager application.
-  </p>
+        <p class="lead">
+            Keep track of your products, stock quantities, and categories — all in one place.
+        </p>
 
-  <p>
-    Sign in or create an account to start managing your inventory.
-  </p>
+        <p>
+            Sign in or create an account to start managing your inventory.
+        </p>
+    </div>
 }
+
+<div class="row g-4">
+
+    <div class="col-12 col-md-6">
+        <div class="card h-100">
+
+            <div class="card-body text-center">
+
+                <h5 class="card-title">
+                    Products
+                </h5>
+
+                <p class="card-text">
+                    Add, edit, delete, and search your products.
+                </p>
+
+            </div>
+
+            <div class="card-footer text-center">
+
+                <a class="btn btn-primary" href="/products">
+                    Go to Products
+                </a>
+
+            </div>
+
+        </div>
+    </div>
+
+
+    <div class="col-12 col-md-6">
+        <div class="card h-100">
+
+            <div class="card-body text-center">
+
+                <h5 class="card-title">
+                    Categories
+                </h5>
+
+                <p class="card-text">
+                    Organize your products into categories.
+                </p>
+
+            </div>
+
+            <div class="card-footer text-center">
+
+                <a class="btn btn-primary" href="/categories">
+                    Go to Categories
+                </a>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
 
 <hr />
 
 <h3>What you can do</h3>
 
 <ul>
-  <li>Create and manage product categories.</li>
-  <li>Add, edit, and remove products.</li>
-  <li>Keep your inventory separate from other users.</li>
-  <li>Manage your account securely.</li>
+    <li>Create and manage product categories.</li>
+    <li>Add, edit, remove, and search products.</li>
+    <li>Keep your inventory separate from other users.</li>
+    <li>Manage your account securely.</li>
 </ul>
+
 
 @code
 {
-  private bool isAuthenticated;
-  private string displayName = "";
+    private bool isAuthenticated;
+    private string displayName = "";
 
-  protected override async Task OnInitializedAsync()
-  {
-    var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-
-    var user = authState.User;
-
-    isAuthenticated = user.Identity?.IsAuthenticated == true;
-
-    if (isAuthenticated)
+    protected override async Task OnInitializedAsync()
     {
-      displayName =
-          user.FindFirst("DisplayName")?.Value
-          ?? user.Identity?.Name
-          ?? "User";
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+        var user = authState.User;
+
+        isAuthenticated = user.Identity?.IsAuthenticated == true;
+
+        if (isAuthenticated)
+        {
+            displayName =
+                user.FindFirst("DisplayName")?.Value
+                ?? user.Identity?.Name
+                ?? "User";
+        }
     }
-  }
 }
