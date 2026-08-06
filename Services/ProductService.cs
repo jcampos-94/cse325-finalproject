@@ -8,12 +8,10 @@ public class ProductService
 {
     private readonly ApplicationDbContext _context;
 
-
     public ProductService(ApplicationDbContext context)
     {
         _context = context;
     }
-
 
     public async Task<List<Product>> GetProductsAsync()
     {
@@ -22,7 +20,6 @@ public class ProductService
             .ToListAsync();
     }
 
-
     public async Task<Product?> GetProductAsync(int id)
     {
         return await _context.Products
@@ -30,6 +27,24 @@ public class ProductService
             .FirstOrDefaultAsync(p => p.Id == id);
     }
 
+    public async Task<List<Product>> SearchProductsAsync(string searchTerm)
+    {
+        var query = _context.Products
+            .Include(p => p.Category)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var term = searchTerm.Trim().ToLower();
+
+            query = query.Where(p =>
+                p.Name.ToLower().Contains(term) ||
+                (p.Description != null && p.Description.ToLower().Contains(term)) ||
+                (p.Category != null && p.Category.Name.ToLower().Contains(term)));
+        }
+
+        return await query.ToListAsync();
+    }
 
     public async Task AddProductAsync(Product product)
     {
@@ -38,36 +53,27 @@ public class ProductService
         await _context.SaveChangesAsync();
     }
 
-
     public async Task UpdateProductAsync(Product product)
     {
         var existingProduct = await _context.Products
             .FirstOrDefaultAsync(p => p.Id == product.Id);
 
-
         if (existingProduct != null)
         {
             existingProduct.Name = product.Name;
-
             existingProduct.Description = product.Description;
-
             existingProduct.Price = product.Price;
-
             existingProduct.Quantity = product.Quantity;
-
             existingProduct.CategoryId = product.CategoryId;
-
 
             await _context.SaveChangesAsync();
         }
     }
 
-
     public async Task DeleteProductAsync(int id)
     {
         var product = await _context.Products
             .FirstOrDefaultAsync(p => p.Id == id);
-
 
         if (product != null)
         {

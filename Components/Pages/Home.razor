@@ -1,7 +1,51 @@
 ﻿@page "/"
+@rendermode InteractiveServer
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="text-center mb-4">
+    <h1>Inventory Manager</h1>
+    <p class="lead">
+        Keep track of your products, stock quantities, and categories — all in one place.
+    </p>
+</div>
 
-Welcome to your new app.
+<div class="row g-4">
+
+    <div class="col-12 col-md-6">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <h5 class="card-title">
+                    Products
+                </h5>
+                <p class="card-text">
+                    Add, edit, delete, and search your products.
+                </p>
+            </div>
+            <div class="card-footer text-center">
+                <a class="btn btn-primary" href="/products">
+                    Go to Products
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-md-6">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <h5 class="card-title">
+                    Categories
+                </h5>
+                <p class="card-text">
+                    Organize your products into categories.
+                </p>
+            </div>
+            <div class="card-footer text-center">
+                <a class="btn btn-primary" href="/categories">
+                    Go to Categories
+                </a>
+            </div>
+        </div>
+    </div>
+
+</div>

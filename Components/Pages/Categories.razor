@@ -5,50 +5,72 @@
 
 @inject CategoryService CategoryService
 
+<PageTitle>Categories</PageTitle>
 
 <h1>Categories</h1>
 
-<div class="mb-3">
+@if (!string.IsNullOrEmpty(validationMessage))
+{
+    <p class="text-danger">
+        @validationMessage
+    </p>
+}
 
-    <input class="form-control"
-    placeholder="Category name"
-    @bind="newCategoryName" />
-    @if (!string.IsNullOrEmpty(validationMessage))
-    {
-        <p class="text-danger">
-            @validationMessage
-        </p>
-    }
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <p class="text-danger">
+        @errorMessage
+    </p>
+}
 
-    @if (!string.IsNullOrEmpty(errorMessage))
-    {
-        <p class="text-danger">
-            @errorMessage
-        </p>
-    }
-    <button class="btn btn-primary mt-2"
-    @onclick="AddCategory">
-    Add Category
-</button>
+@if (!string.IsNullOrEmpty(successMessage))
+{
+    <p class="text-success">
+        @successMessage
+    </p>
+}
 
+<div class="row g-3 mb-4">
+    <div class="col-12 col-md-6 col-lg-4">
+        <label class="form-label">
+            New Category Name
+        </label>
+        <div class="input-group">
+            <input class="form-control"
+                   placeholder="Category name"
+                   @bind="newCategoryName" />
+            <button class="btn btn-primary"
+                    @onclick="AddCategory">
+                Add Category
+            </button>
+        </div>
+    </div>
 </div>
 
 @if (isEditing)
 {
-    <div class="mb-3">
-
-        <input class="form-control"
-        @bind="editingCategoryName" />
-
-        <button class="btn btn-success mt-2"
-        @onclick="SaveEdit">
-        Save Changes
-    </button>
-
-</div>
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-6 col-lg-4">
+            <label class="form-label">
+                Edit Category Name
+            </label>
+            <div class="input-group">
+                <input class="form-control"
+                       @bind="editingCategoryName" />
+                <button class="btn btn-success"
+                        @onclick="SaveEdit">
+                    Save Changes
+                </button>
+                <button class="btn btn-secondary"
+                        @onclick="CancelEdit">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
 }
-<h3>Existing Categories</h3>
 
+<h3>Existing Categories</h3>
 
 @if (categories == null)
 {
@@ -84,27 +106,27 @@ else
                         <td>
 
                             <button class="btn btn-warning btn-sm me-2"
-                            @onclick="() => StartEdit(category)">
-                            Edit
-                        </button>
+                                    @onclick="() => StartEdit(category)">
+                                Edit
+                            </button>
 
-                        <button class="btn btn-danger btn-sm"
-                        @onclick="() => ConfirmDelete(category)">
-                        Delete
-                    </button>
+                            <button class="btn btn-danger btn-sm"
+                                    @onclick="() => ConfirmDelete(category)">
+                                Delete
+                            </button>
 
-                </td>
+                        </td>
 
-            </tr>
-        }
+                    </tr>
+                }
 
-    </tbody>
+            </tbody>
 
-</table>
+        </table>
 
-</div>
-
+    </div>
 }
+
 @if (showDeleteConfirmation)
 {
     <div class="alert alert-warning">
@@ -114,20 +136,19 @@ else
             <strong>@categoryToDeleteName</strong>?
         </p>
 
-
         <button class="btn btn-danger me-2"
-        @onclick="DeleteCategory">
-        Delete
-    </button>
+                @onclick="DeleteCategory">
+            Delete
+        </button>
 
+        <button class="btn btn-secondary"
+                @onclick="() => showDeleteConfirmation = false">
+            Cancel
+        </button>
 
-    <button class="btn btn-secondary"
-    @onclick="() => showDeleteConfirmation = false">
-    Cancel
-</button>
-
-</div>
+    </div>
 }
+
 @code
 {
     private List<Category>? categories;
@@ -137,6 +158,8 @@ else
     private string validationMessage = "";
 
     private string errorMessage = "";
+
+    private string successMessage = "";
 
     private bool showDeleteConfirmation = false;
 
@@ -150,7 +173,6 @@ else
 
     private string editingCategoryName = "";
 
-
     protected override async Task OnInitializedAsync()
     {
         await LoadCategories();
@@ -160,12 +182,17 @@ else
     {
         categories = await CategoryService.GetCategoriesAsync();
     }
-    private async Task AddCategory()
+
+    private void ClearMessages()
     {
         validationMessage = "";
-
         errorMessage = "";
+        successMessage = "";
+    }
 
+    private async Task AddCategory()
+    {
+        ClearMessages();
 
         try
         {
@@ -176,103 +203,107 @@ else
                 return;
             }
 
-
             var category = new Category
             {
                 Name = newCategoryName.Trim()
-                };
+            };
 
+            await CategoryService.AddCategoryAsync(category);
 
-                await CategoryService.AddCategoryAsync(category);
+            newCategoryName = "";
 
+            successMessage = "Category added successfully.";
 
-                newCategoryName = "";
-
-
-                await LoadCategories();
-            }
-            catch (Exception)
-            {
-                errorMessage = "Unable to save category. Please try again.";
-            }
+            await LoadCategories();
         }
-
-
-        private void StartEdit(Category category)
+        catch (Exception)
         {
-            isEditing = true;
-
-            editingCategoryId = category.Id;
-
-            editingCategoryName = category.Name;
+            errorMessage = "Unable to save category. Please try again.";
         }
+    }
 
+    private void StartEdit(Category category)
+    {
+        isEditing = true;
 
-        private async Task SaveEdit()
+        editingCategoryId = category.Id;
+
+        editingCategoryName = category.Name;
+
+        ClearMessages();
+    }
+
+    private void CancelEdit()
+    {
+        isEditing = false;
+
+        editingCategoryName = "";
+
+        ClearMessages();
+    }
+
+    private async Task SaveEdit()
+    {
+        ClearMessages();
+
+        try
         {
-            validationMessage = "";
-
-            errorMessage = "";
-
-
-            try
+            if (string.IsNullOrWhiteSpace(editingCategoryName))
             {
-                if (string.IsNullOrWhiteSpace(editingCategoryName))
-                {
-                    validationMessage = "Category name is required.";
+                validationMessage = "Category name is required.";
 
-                    return;
-                }
-
-
-                var category = new Category
-                {
-                    Id = editingCategoryId,
-
-                    Name = editingCategoryName.Trim()
-                    };
-
-
-                    await CategoryService.UpdateCategoryAsync(category);
-
-
-                    isEditing = false;
-
-                    editingCategoryName = "";
-
-
-                    await LoadCategories();
-                }
-                catch (Exception)
-                {
-                    errorMessage = "Unable to update category. Please try again.";
-                }
+                return;
             }
 
-
-            private void ConfirmDelete(Category category)
+            var category = new Category
             {
-                categoryToDeleteId = category.Id;
+                Id = editingCategoryId,
 
-                categoryToDeleteName = category.Name;
+                Name = editingCategoryName.Trim()
+            };
 
-                showDeleteConfirmation = true;
-            }
+            await CategoryService.UpdateCategoryAsync(category);
 
+            isEditing = false;
 
-            private async Task DeleteCategory()
-            {
-                try
-                {
-                    await CategoryService.DeleteCategoryAsync(categoryToDeleteId);
+            editingCategoryName = "";
 
-                    showDeleteConfirmation = false;
+            successMessage = "Category updated successfully.";
 
-                    await LoadCategories();
-                }
-                catch (Exception)
-                {
-                    errorMessage = "Unable to delete category. Please try again.";
-                }
-                }   
-}    
+            await LoadCategories();
+        }
+        catch (Exception)
+        {
+            errorMessage = "Unable to update category. Please try again.";
+        }
+    }
+
+    private void ConfirmDelete(Category category)
+    {
+        categoryToDeleteId = category.Id;
+
+        categoryToDeleteName = category.Name;
+
+        showDeleteConfirmation = true;
+
+        ClearMessages();
+    }
+
+    private async Task DeleteCategory()
+    {
+        try
+        {
+            await CategoryService.DeleteCategoryAsync(categoryToDeleteId);
+
+            showDeleteConfirmation = false;
+
+            successMessage = "Category deleted successfully.";
+
+            await LoadCategories();
+        }
+        catch (Exception)
+        {
+            errorMessage = "Unable to delete category. Please try again.";
+        }
+    }
+}
