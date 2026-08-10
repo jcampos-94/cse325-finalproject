@@ -20,7 +20,7 @@ public class ProductService
     _authenticationStateProvider = authenticationStateProvider;
   }
 
-
+  // Get the ID of the currently authenticated user.
   private async Task<string?> GetCurrentUserIdAsync()
   {
     var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
@@ -61,6 +61,7 @@ public class ProductService
       return null;
     }
 
+    /// Only return products owned by the logged-in user.
     return await _context.Products
         .Where(p => p.UserId == userId)
         .Include(p => p.Category)
@@ -77,6 +78,7 @@ public class ProductService
       return new List<Product>();
     }
 
+    // Restrict searches to products owned by the logged-in user.
     var query = _context.Products
         .Where(p => p.UserId == userId)
         .Include(p => p.Category)
@@ -105,6 +107,7 @@ public class ProductService
       return;
     }
 
+    // Associate the new product with the logged-in user.
     product.UserId = userId;
 
     _context.Products.Add(product);
@@ -122,6 +125,7 @@ public class ProductService
       return;
     }
 
+    // Find the product only if it belongs to the logged-in user.
     var existingProduct = await _context.Products
         .FirstOrDefaultAsync(p =>
             p.Id == product.Id &&
@@ -155,6 +159,7 @@ public class ProductService
       return;
     }
 
+    // Find the product only if it belongs to the logged-in user.
     var product = await _context.Products
         .FirstOrDefaultAsync(p =>
             p.Id == id &&

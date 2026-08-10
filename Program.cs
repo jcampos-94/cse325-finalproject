@@ -6,10 +6,12 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+// Configure SQLite database storage using the application's connection string.
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(
         builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Configure ASP.NET Core Identity for user authentication and account management.
 builder.Services
     .AddDefaultIdentity<ApplicationUser>(options =>
     {
@@ -17,6 +19,7 @@ builder.Services
     })
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
+// Redirect unauthenticated users to the login page.
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/login";
@@ -34,14 +37,14 @@ builder.Services.AddRazorComponents()
 
 var app = builder.Build();
 
-// Use Migrations for rendering the database schema
+// Apply pending database migrations when the application starts.
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     db.Database.Migrate();
 }
 
-// Configure the HTTP request pipeline.
+// Configure the HTTP request pipeline and application middleware.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
@@ -54,7 +57,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Create a normal HTTP POST route
+// Handle login requests and create an authenticated user session.
 app.MapPost("/account/login", async (
     HttpContext context,
     SignInManager<ApplicationUser> signInManager) =>
@@ -94,7 +97,7 @@ app.MapPost("/account/login", async (
     return Results.Redirect("/");
 });
 
-
+// Handle logout requests and end the user's authenticated session.
 app.MapGet("/account/logout", async (
     SignInManager<ApplicationUser> signInManager) =>
 {

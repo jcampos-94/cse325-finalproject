@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace cse325_finalproject.Services;
 
+/// Provides database operations for product categories.
 public class CategoryService
 {
     private readonly ApplicationDbContext _context;
@@ -37,18 +38,19 @@ public class CategoryService
             await _context.SaveChangesAsync();
         }
     }
-public async Task UpdateCategoryAsync(Category category)
-{
-    var existingCategory = await _context.Categories
-        .FirstOrDefaultAsync(c => c.Id == category.Id);
-
-    if (existingCategory != null)
+    public async Task UpdateCategoryAsync(Category category)
     {
-        existingCategory.Name = category.Name;
+        // Find the existing category before applying the updated values.
+        var existingCategory = await _context.Categories
+            .FirstOrDefaultAsync(c => c.Id == category.Id);
 
-        existingCategory.Description = category.Description;
+        if (existingCategory != null)
+        {
+            existingCategory.Name = category.Name;
 
-        await _context.SaveChangesAsync();
+            existingCategory.Description = category.Description;
+
+            await _context.SaveChangesAsync();
+        }
     }
-}
 }

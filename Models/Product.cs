@@ -21,14 +21,15 @@ public class Product
     [Range(0, int.MaxValue)]
     public int Quantity { get; set; }
 
-    // Foreign key to the logged-in user
+    // Foreign key linking the product to the user who created it.
     public string UserId { get; set; } = string.Empty;
 
     // Navigation property
     public ApplicationUser? User { get; set; }
 
+    // Foreign key linking the product to its category.
     public int CategoryId { get; set; }
 
-
+    // Navigation property for the product's category.
     public Category? Category { get; set; }
 }

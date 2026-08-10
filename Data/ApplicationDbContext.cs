@@ -11,6 +11,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
     }
 
+    // Database tables for products and categories.
     public DbSet<Category> Categories { get; set; }
 
     public DbSet<Product> Products { get; set; }
@@ -19,12 +20,14 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         base.OnModelCreating(modelBuilder);
 
+        // Configure the relationship between products and categories.
         modelBuilder.Entity<Product>()
             .HasOne(p => p.Category)
             .WithMany(c => c.Products)
             .HasForeignKey(p => p.CategoryId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        // Configure the relationship between products and their owners.
         modelBuilder.Entity<Product>()
             .HasOne(p => p.User)
             .WithMany()
